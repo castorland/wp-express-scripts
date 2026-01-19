@@ -1,0 +1,43 @@
+# OS Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*~
+
+# Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+.vim/
+
+# Temporary Files
+*.tmp
+*.log
+*.bak
+*.backup
+*.old
+
+# Sensitive Data
+.env
+.env.*
+*.credentials
+*.key
+*.pem
+*.crt
+*.cert
+
+# Test Projects
+test-*/
+demo-*/
+tmp-*/
+
+# Backup Files
+*.sql
+*.sql.gz
+backups/
