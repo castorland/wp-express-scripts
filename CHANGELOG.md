@@ -5,7 +5,24 @@ All notable changes to WP Express project management scripts will be documented 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.0] - 2026-01-19
+## [1.0.1] - 2024-01-19
+
+### Fixed
+- 🐛 Fixed database connection error when creating new projects with HTTPS `.local` domains
+- 🔧 Changed database connection test from `mysql` to `mariadb` client command
+- 📝 Added explicit `--env-file .env` flag to all docker-compose commands to ensure environment variables are properly loaded
+- ⏱️ Increased database initialization timeout from 30 to 40 attempts
+- 🕐 Added 5-second initial wait before testing database connection to allow container startup
+- 📊 Improved error messages and diagnostics for database connection failures
+- ✅ Better feedback during database initialization process
+
+### Technical Details
+- The MariaDB 11.8 image uses `mariadb` command instead of `mysql`
+- Docker Compose now explicitly loads `.env` file for all operations
+- Database initialization properly waits for container to be fully ready
+- Root cause: Environment variables weren't being passed correctly to database container during initialization
+
+## [1.0.0] - 2024-01-19
 
 ### Added
 - 🎉 Initial release of automated project creation script
@@ -104,4 +121,5 @@ None - initial release
 
 ---
 
+[1.0.1]: https://github.com/castorland/wp-express-scripts/releases/tag/v1.0.1
 [1.0.0]: https://github.com/castorland/wp-express-scripts/releases/tag/v1.0.0
