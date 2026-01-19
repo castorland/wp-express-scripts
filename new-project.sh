@@ -500,9 +500,9 @@ if [ "$START_CONTAINERS" = "true" ]; then
     print_info "Starting containers..."
 
     if [ "$ENABLE_REDIS" = "true" ]; then
-        docker-compose -f "$COMPOSE_FILE" --profile redis up -d
+        docker-compose -f "$COMPOSE_FILE" --env-file .env --profile redis up -d
     else
-        docker-compose -f "$COMPOSE_FILE" up -d nginx php database
+        docker-compose -f "$COMPOSE_FILE" --env-file .env up -d nginx php database
     fi
 
     if [ $? -ne 0 ]; then
@@ -519,13 +519,18 @@ if [ "$START_CONTAINERS" = "true" ]; then
 
     # Wait for database
     print_info "Waiting for database to be ready..."
-    max_attempts=30
+    print_info "This may take 20-30 seconds for first-time initialization..."
+    max_attempts=40
     attempt=0
 
+    # First wait for container to be healthy
+    sleep 5
+
     while [ $attempt -lt $max_attempts ]; do
-        if docker-compose -f "$COMPOSE_FILE" exec -T database mysql -uwordpress -p"${DB_PASS}" -e "SELECT 1" >/dev/null 2>&1; then
+        # Try to connect using mariadb client with the generated password
+        if docker-compose -f "$COMPOSE_FILE" --env-file .env exec -T database mariadb -uwordpress -p"${DB_PASS}" -e "SELECT 1" >/dev/null 2>&1; then
             echo ""
-            print_success "Database is ready"
+            print_success "Database is ready and accepting connections"
             break
         fi
         attempt=$((attempt + 1))
@@ -535,14 +540,20 @@ if [ "$START_CONTAINERS" = "true" ]; then
 
     if [ $attempt -eq $max_attempts ]; then
         echo ""
-        print_warning "Database may not be ready yet"
-        print_info "Waiting an additional 10 seconds..."
+        print_error "Database connection test failed after ${max_attempts} attempts"
+        print_warning "This might be a docker-compose environment variable issue"
+        print_info "Attempting to diagnose..."
+
+        # Try to see what's in the database container
+        docker-compose -f "$COMPOSE_FILE" --env-file .env exec -T database mariadb -uroot -p"${DB_PASS}" -e "SELECT User, Host FROM mysql.user;" 2>&1 || true
+
+        print_info "Waiting an additional 10 seconds and continuing anyway..."
         sleep 10
     fi
 
     echo ""
     print_info "Container status:"
-    docker-compose -f "$COMPOSE_FILE" ps
+    docker-compose -f "$COMPOSE_FILE" --env-file .env ps
     echo ""
 
 else
@@ -567,7 +578,7 @@ if [ "$INSTALL_WP" = "true" ] && [ "$START_CONTAINERS" = "true" ]; then
 
     print_info "Installing WordPress core..."
 
-    if docker-compose -f "$COMPOSE_FILE" exec -T php vendor/bin/wp core install \
+    if docker-compose -f "$COMPOSE_FILE" --env-file .env exec -T php vendor/bin/wp core install \
         --url="${WP_HOME}" \
         --title="${SITE_TITLE}" \
         --admin_user="${ADMIN_USER}" \
@@ -579,16 +590,16 @@ if [ "$INSTALL_WP" = "true" ] && [ "$START_CONTAINERS" = "true" ]; then
         print_success "WordPress installed successfully"
 
         print_info "Activating plugins..."
-        docker-compose -f "$COMPOSE_FILE" exec -T php vendor/bin/wp plugin activate --all --allow-root >/dev/null 2>&1
+        docker-compose -f "$COMPOSE_FILE" --env-file .env exec -T php vendor/bin/wp plugin activate --all --allow-root >/dev/null 2>&1
         print_success "Plugins activated"
 
         print_info "Activating Hello Elementor theme..."
-        docker-compose -f "$COMPOSE_FILE" exec -T php vendor/bin/wp theme activate hello-elementor --allow-root >/dev/null 2>&1
+        docker-compose -f "$COMPOSE_FILE" --env-file .env exec -T php vendor/bin/wp theme activate hello-elementor --allow-root >/dev/null 2>&1
         print_success "Theme activated"
 
         print_info "Configuring permalinks..."
-        docker-compose -f "$COMPOSE_FILE" exec -T php vendor/bin/wp rewrite structure '/%postname%/' --allow-root >/dev/null 2>&1
-        docker-compose -f "$COMPOSE_FILE" exec -T php vendor/bin/wp rewrite flush --allow-root >/dev/null 2>&1
+        docker-compose -f "$COMPOSE_FILE" --env-file .env exec -T php vendor/bin/wp rewrite structure '/%postname%/' --allow-root >/dev/null 2>&1
+        docker-compose -f "$COMPOSE_FILE" --env-file .env exec -T php vendor/bin/wp rewrite flush --allow-root >/dev/null 2>&1
         print_success "Permalinks configured"
 
     else
