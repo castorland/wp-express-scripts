@@ -401,6 +401,26 @@ CREDFILE
 chmod 600 .credentials
 print_success "Credentials saved to .credentials"
 
+# Create project metadata file for management scripts
+cat > .wp-express-project << PROJECTFILE
+{
+  "client_name": "${CLIENT_NAME}",
+  "site_title": "${SITE_TITLE}",
+  "domain": "${DOMAIN}",
+  "port": "${PORT}",
+  "protocol": "$([ "$USE_LOCALHOST" = "true" ] && echo "http" || echo "https")",
+  "wp_home": "${WP_HOME}",
+  "email": "${EMAIL}",
+  "admin_user": "${ADMIN_USER}",
+  "environment": "development",
+  "redis_enabled": ${ENABLE_REDIS},
+  "created_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "github_branch": "${BRANCH}",
+  "use_localhost": ${USE_LOCALHOST}
+}
+PROJECTFILE
+print_success "Project metadata saved to .wp-express-project"
+
 ################################################################################
 # STEP 3: Install dependencies with Composer
 ################################################################################
