@@ -206,10 +206,12 @@ header "Step 7/9 — Traefik"
 
 mkdir -p "${TRAEFIK_DIR}/acme" "${TRAEFIK_DIR}/logs" "${TRAEFIK_DIR}/dynamic"
 
-# Copy config files from this script's directory
-cp "${VPS_DIR}/traefik/traefik.yml"                  "${TRAEFIK_DIR}/traefik.yml"
-cp "${VPS_DIR}/traefik/dynamic/middlewares.yml"       "${TRAEFIK_DIR}/dynamic/middlewares.yml"
-cp "${VPS_DIR}/traefik/docker-compose.yml"            "${TRAEFIK_DIR}/docker-compose.yml"
+# Copy config files from this script's directory (skip if already in place)
+if [ "${VPS_DIR}" != "${TRAEFIK_DIR}" ]; then
+    cp "${VPS_DIR}/traefik/traefik.yml"                  "${TRAEFIK_DIR}/traefik.yml"
+    cp "${VPS_DIR}/traefik/dynamic/middlewares.yml"       "${TRAEFIK_DIR}/dynamic/middlewares.yml"
+    cp "${VPS_DIR}/traefik/docker-compose.yml"            "${TRAEFIK_DIR}/docker-compose.yml"
+fi
 
 # acme.json must exist with 600 permissions before Traefik starts
 ACME_JSON="${TRAEFIK_DIR}/acme/acme.json"
@@ -255,9 +257,11 @@ setup_mariadb() {
     chmod 600 "${DIR}/secrets/root_password"
     chown root:root "${DIR}/secrets/root_password"
 
-    # Copy config files
-    cp "${VPS_DIR}/${NAME}/docker-compose.yml" "${DIR}/docker-compose.yml"
-    cp "${VPS_DIR}/${NAME}/my.cnf"             "${DIR}/my.cnf"
+    # Copy config files (skip if already in place)
+    if [ "${VPS_DIR}/${NAME}" != "${DIR}" ]; then
+        cp "${VPS_DIR}/${NAME}/docker-compose.yml" "${DIR}/docker-compose.yml"
+        cp "${VPS_DIR}/${NAME}/my.cnf"             "${DIR}/my.cnf"
+    fi
 
     cd "$DIR"
     if docker ps --format '{{.Names}}' | grep -q "^${CONTAINER}$"; then
@@ -313,7 +317,9 @@ fi
 
 # Copy backup script and set up cron
 mkdir -p "${BACKUP_DIR}/dumps"
-cp "${VPS_DIR}/backup/backup.sh" "${BACKUP_DIR}/backup.sh"
+if [ "${VPS_DIR}/backup" != "${BACKUP_DIR}" ]; then
+    cp "${VPS_DIR}/backup/backup.sh" "${BACKUP_DIR}/backup.sh"
+fi
 chmod +x "${BACKUP_DIR}/backup.sh"
 
 CRON_ENTRY="0 * * * * /opt/wp-express/backup/backup.sh >> /opt/wp-express/backup/backup.log 2>&1"
