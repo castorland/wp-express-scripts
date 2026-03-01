@@ -1,0 +1,58 @@
+# Traefik v3 — Static Configuration
+# Deployed to /opt/wp-express/traefik/traefik.yml on the VPS
+
+global:
+  checkNewVersion: false
+  sendAnonymousUsage: false
+
+api:
+  dashboard: true
+  insecure: false
+
+entryPoints:
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+          permanent: true
+
+  websecure:
+    address: ":443"
+    http:
+      tls:
+        certResolver: letsencrypt
+    # HTTP/3 (QUIC) — optional, enable when ready
+    # http3: {}
+
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      # Email set via ACME_EMAIL env var in docker-compose
+      email: "${ACME_EMAIL}"
+      storage: /acme/acme.json
+      # HTTP challenge — works with wildcard A record, no DNS API needed
+      httpChallenge:
+        entryPoint: web
+
+providers:
+  docker:
+    exposedByDefault: false
+    network: traefik_web
+    # Watch only containers with traefik.enable=true label
+  file:
+    directory: /dynamic
+    watch: true
+
+log:
+  level: WARN
+  filePath: /logs/traefik.log
+
+accessLog:
+  filePath: /logs/access.log
+  bufferingSize: 100
+  filters:
+    statusCodes:
+      - "400-599"   # Log only errors to keep logs manageable

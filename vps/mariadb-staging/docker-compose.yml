@@ -1,0 +1,34 @@
+services:
+  mariadb-staging:
+    image: mariadb:11.8
+    container_name: mariadb_staging
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mariadb_root_password
+    volumes:
+      - mariadb_staging_data:/var/lib/mysql
+      - ./my.cnf:/etc/mysql/conf.d/custom.cnf:ro
+    secrets:
+      - mariadb_root_password
+    networks:
+      - mariadb_staging_net
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "mariadb", "-u", "root", "--password-file=/run/secrets/mariadb_root_password", "-e", "SELECT 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+secrets:
+  mariadb_root_password:
+    file: ./secrets/root_password
+
+volumes:
+  mariadb_staging_data:
+    driver: local
+
+networks:
+  mariadb_staging_net:
+    external: true

@@ -1,0 +1,47 @@
+# Traefik v3 — Dynamic Middleware Configuration
+# Reloaded automatically on change (no restart needed)
+
+http:
+  middlewares:
+
+    # Security headers applied to all WordPress sites
+    security-headers:
+      headers:
+        frameDeny: true
+        contentTypeNosniff: true
+        browserXssFilter: true
+        referrerPolicy: "strict-origin-when-cross-origin"
+        forceSTSHeader: true
+        stsSeconds: 31536000
+        stsIncludeSubdomains: true
+        stsPreload: true
+        customResponseHeaders:
+          X-Powered-By: ""
+          Server: ""
+        customRequestHeaders:
+          X-Forwarded-Proto: "https"
+
+    # Rate limiting — general (adjust per-site via labels if needed)
+    rate-limit:
+      rateLimit:
+        average: 100
+        period: "1s"
+        burst: 150
+
+    # Stricter rate limit for WordPress login page
+    rate-limit-login:
+      rateLimit:
+        average: 5
+        period: "1m"
+        burst: 10
+
+    # Compress responses
+    compress:
+      compress: {}
+
+    # Redirect /wp-login.php → /wp/wp-login.php (Bedrock path)
+    wp-login-redirect:
+      redirectRegex:
+        regex: "^(https?://[^/]+)/wp-login\\.php(.*)"
+        replacement: "${1}/wp/wp-login.php${2}"
+        permanent: false
