@@ -125,8 +125,10 @@ header "Step 3/9 — SSH hardening"
 
 SSH_CONFIG="/etc/ssh/sshd_config.d/99-wp-express.conf"
 if [ ! -f "$SSH_CONFIG" ]; then
+    # PermitRootLogin stays 'yes' for now so you keep access during bootstrap.
+    # Run the final lockdown step manually after verifying deploy user SSH works.
     cat > "$SSH_CONFIG" << 'EOF'
-PermitRootLogin no
+PermitRootLogin yes
 PasswordAuthentication no
 PubkeyAuthentication yes
 AuthorizedKeysFile .ssh/authorized_keys
@@ -138,7 +140,7 @@ ClientAliveInterval 300
 ClientAliveCountMax 2
 EOF
     systemctl reload ssh 2>/dev/null || systemctl reload sshd
-    success "SSH hardened (root login disabled, password auth disabled)"
+    success "SSH hardened (password auth disabled; root login disabled after final step)"
 else
     info "SSH config already applied — skipping"
 fi
@@ -346,3 +348,8 @@ echo "  1. Verify DNS: *.${BASE_DOMAIN} → $(curl -sf https://api.ipify.org || 
 echo "  2. Deploy your first site: deploy.sh local staging <client-name>"
 echo ""
 echo -e "${YELLOW}⚠  Keep secrets/root_password files backed up securely!${NC}"
+echo ""
+echo -e "${YELLOW}🔒  Final lockdown (run when deploy user SSH is verified):${NC}"
+echo "  sed -i 's/PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config.d/99-wp-express.conf"
+echo "  systemctl reload ssh"
+echo "  # Then update ~/.ssh/config: change User from root → deploy"
