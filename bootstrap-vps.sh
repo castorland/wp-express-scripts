@@ -137,7 +137,7 @@ LoginGraceTime 20
 ClientAliveInterval 300
 ClientAliveCountMax 2
 EOF
-    systemctl reload sshd
+    systemctl reload ssh 2>/dev/null || systemctl reload sshd
     success "SSH hardened (root login disabled, password auth disabled)"
 else
     info "SSH config already applied — skipping"
