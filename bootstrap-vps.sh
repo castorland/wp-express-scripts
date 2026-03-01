@@ -213,6 +213,9 @@ if [ "${VPS_DIR}/traefik" != "${TRAEFIK_DIR}" ]; then
     cp "${VPS_DIR}/traefik/docker-compose.yml"            "${TRAEFIK_DIR}/docker-compose.yml"
 fi
 
+# Traefik does not substitute env vars in traefik.yml — write email directly
+sed -i "s|email: \"\${ACME_EMAIL}\"|email: \"${ACME_EMAIL}\"|" "${TRAEFIK_DIR}/traefik.yml"
+
 # acme.json must exist with 600 permissions before Traefik starts
 ACME_JSON="${TRAEFIK_DIR}/acme/acme.json"
 [ -f "$ACME_JSON" ] || touch "$ACME_JSON"
