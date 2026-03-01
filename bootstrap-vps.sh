@@ -207,7 +207,7 @@ header "Step 7/9 — Traefik"
 mkdir -p "${TRAEFIK_DIR}/acme" "${TRAEFIK_DIR}/logs" "${TRAEFIK_DIR}/dynamic"
 
 # Copy config files from this script's directory (skip if already in place)
-if [ "${VPS_DIR}" != "${TRAEFIK_DIR}" ]; then
+if [ "${VPS_DIR}/traefik" != "${TRAEFIK_DIR}" ]; then
     cp "${VPS_DIR}/traefik/traefik.yml"                  "${TRAEFIK_DIR}/traefik.yml"
     cp "${VPS_DIR}/traefik/dynamic/middlewares.yml"       "${TRAEFIK_DIR}/dynamic/middlewares.yml"
     cp "${VPS_DIR}/traefik/docker-compose.yml"            "${TRAEFIK_DIR}/docker-compose.yml"
