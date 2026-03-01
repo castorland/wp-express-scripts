@@ -219,7 +219,8 @@ ACME_JSON="${TRAEFIK_DIR}/acme/acme.json"
 chmod 600 "$ACME_JSON"
 
 # Generate htpasswd for dashboard
-TRAEFIK_DASHBOARD_AUTH=$(htpasswd -nb "$TRAEFIK_DASHBOARD_USER" "$TRAEFIK_DASHBOARD_PASSWORD")
+# Escape $ → $$ so Docker Compose doesn't interpret the hash as variable substitutions
+TRAEFIK_DASHBOARD_AUTH=$(htpasswd -nb "$TRAEFIK_DASHBOARD_USER" "$TRAEFIK_DASHBOARD_PASSWORD" | sed 's/\$/\$\$/g')
 
 # Write Traefik .env
 cat > "${TRAEFIK_DIR}/.env" << EOF
