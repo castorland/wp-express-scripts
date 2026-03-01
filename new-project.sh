@@ -416,7 +416,8 @@ cat > .wp-express-project << PROJECTFILE
   "redis_enabled": ${ENABLE_REDIS},
   "created_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
   "github_branch": "${BRANCH}",
-  "use_localhost": ${USE_LOCALHOST}
+  "use_localhost": ${USE_LOCALHOST},
+  "github_repo": ""
 }
 PROJECTFILE
 print_success "Project metadata saved to .wp-express-project"
@@ -613,9 +614,7 @@ if [ "$INSTALL_WP" = "true" ] && [ "$START_CONTAINERS" = "true" ]; then
         docker-compose -f "$COMPOSE_FILE" --env-file .env exec -T php vendor/bin/wp plugin activate --all --allow-root >/dev/null 2>&1
         print_success "Plugins activated"
 
-        print_info "Activating Hello Elementor theme..."
-        docker-compose -f "$COMPOSE_FILE" --env-file .env exec -T php vendor/bin/wp theme activate hello-elementor --allow-root >/dev/null 2>&1
-        print_success "Theme activated"
+        print_warning "Theme: Install Bricks theme manually via WordPress admin"
 
         print_info "Configuring permalinks..."
         docker-compose -f "$COMPOSE_FILE" --env-file .env exec -T php vendor/bin/wp rewrite structure '/%postname%/' --allow-root >/dev/null 2>&1
