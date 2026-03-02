@@ -649,7 +649,9 @@ if [ "$INSTALL_WP" = "true" ] && [ "$START_CONTAINERS" = "true" ]; then
         docker-compose -f "$COMPOSE_FILE" --env-file .env exec -T php vendor/bin/wp plugin activate --all --allow-root >/dev/null 2>&1
         print_success "Plugins activated"
 
-        print_warning "Theme: Install Bricks theme manually via WordPress admin"
+        print_info "Activating Kadence theme..."
+        docker-compose -f "$COMPOSE_FILE" --env-file .env exec -T php vendor/bin/wp theme activate kadence --allow-root >/dev/null 2>&1
+        print_success "Kadence theme activated"
 
         print_info "Configuring permalinks..."
         docker-compose -f "$COMPOSE_FILE" --env-file .env exec -T php vendor/bin/wp rewrite structure '/%postname%/' --allow-root >/dev/null 2>&1
