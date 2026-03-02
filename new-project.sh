@@ -472,6 +472,41 @@ git commit -q -m "Configure environment for ${CLIENT_NAME}" 2>/dev/null || true
 print_success "Configuration committed to git"
 
 ################################################################################
+# STEP 4b: Create GitHub repo under WP-Express-Clients org
+################################################################################
+
+GITHUB_ORG="WP-Express-Clients"
+CLIENT_GITHUB_REPO="https://github.com/${GITHUB_ORG}/${CLIENT_NAME}.git"
+
+if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
+    if gh repo view "${GITHUB_ORG}/${CLIENT_NAME}" >/dev/null 2>&1; then
+        print_info "GitHub repo ${GITHUB_ORG}/${CLIENT_NAME} already exists — setting remote"
+    else
+        gh repo create "${GITHUB_ORG}/${CLIENT_NAME}" --private --source=. --remote=origin --description "WP Express client site: ${CLIENT_NAME}" >/dev/null
+        print_success "GitHub repo created: ${CLIENT_GITHUB_REPO}"
+    fi
+    git remote set-url origin "${CLIENT_GITHUB_REPO}" 2>/dev/null || git remote add origin "${CLIENT_GITHUB_REPO}"
+    git push -u origin main -q
+    print_success "Pushed to ${CLIENT_GITHUB_REPO}"
+
+    # Update .wp-express-project with the repo URL
+    if command -v python3 >/dev/null 2>&1; then
+        python3 -c "
+import json, sys
+with open('.wp-express-project') as f: d = json.load(f)
+d['github_repo'] = '${CLIENT_GITHUB_REPO}'
+with open('.wp-express-project', 'w') as f: json.dump(d, f, indent=2)
+"
+        git add .wp-express-project
+        git commit -q -m "Set github_repo in project config" 2>/dev/null || true
+        git push -q
+    fi
+else
+    print_warning "gh CLI not authenticated — skipping GitHub repo creation"
+    print_warning "Create manually: gh repo create ${GITHUB_ORG}/${CLIENT_NAME} --private"
+fi
+
+################################################################################
 # STEP 5: Start Docker containers
 ################################################################################
 
