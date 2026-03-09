@@ -476,7 +476,7 @@ print_success "Configuration committed to git"
 ################################################################################
 
 GITHUB_ORG="WP-Express-Clients"
-CLIENT_GITHUB_REPO="https://github.com/${GITHUB_ORG}/${CLIENT_NAME}.git"
+CLIENT_GITHUB_REPO="git@github.com:${GITHUB_ORG}/${CLIENT_NAME}.git"
 
 if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
     if gh repo view "${GITHUB_ORG}/${CLIENT_NAME}" >/dev/null 2>&1; then
