@@ -258,8 +258,10 @@ setup_mariadb() {
 
     # Save password to secrets file
     echo -n "$ROOT_PASS" > "${DIR}/secrets/root_password"
-    chmod 600 "${DIR}/secrets/root_password"
-    chown root:root "${DIR}/secrets/root_password"
+    chmod 640 "${DIR}/secrets/root_password"
+    chown root:"${DEPLOY_USER}" "${DIR}/secrets/root_password"
+    chmod 750 "${DIR}/secrets"
+    chown root:"${DEPLOY_USER}" "${DIR}/secrets"
 
     # Copy config files (skip if already in place)
     if [ "${VPS_DIR}/${NAME}" != "${DIR}" ]; then
