@@ -318,7 +318,7 @@ fi
 # (must run after composer install so the plugin directories exist)
 if [ -d "${stack_dir}/web/app/plugins/all-in-one-wp-migration" ]; then
     mkdir -p "${stack_dir}/web/app/plugins/all-in-one-wp-migration/storage"
-    chmod 777 "${stack_dir}/web/app/plugins/all-in-one-wp-migration/storage"
+    chmod 777 "${stack_dir}/web/app/plugins/all-in-one-wp-migration/storage" 2>/dev/null || true
 fi
 EOF
     success "Code ready at ${stack_dir}"
@@ -611,7 +611,7 @@ fi
 # Create writable storage directories for plugins that need them
 if [ -d "\${PROD_DIR}/web/app/plugins/all-in-one-wp-migration" ]; then
     mkdir -p "\${PROD_DIR}/web/app/plugins/all-in-one-wp-migration/storage"
-    chmod 777 "\${PROD_DIR}/web/app/plugins/all-in-one-wp-migration/storage"
+    chmod 777 "\${PROD_DIR}/web/app/plugins/all-in-one-wp-migration/storage" 2>/dev/null || true
 fi
 EOF
     success "Production code at staging commit"
