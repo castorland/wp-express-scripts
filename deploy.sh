@@ -251,7 +251,7 @@ DB_PREFIX='wp_'
 # WordPress
 WP_ENV='${wp_env}'
 WP_HOME='${wp_home}'
-WP_SITEURL='\${WP_HOME}/wp'
+WP_SITEURL='${wp_home}/wp'
 
 # Redis
 REDIS_ENABLED='$([ "$stack_env" = "production" ] && echo true || echo false)'
