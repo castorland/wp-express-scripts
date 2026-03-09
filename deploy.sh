@@ -201,17 +201,14 @@ create_client_db() {
     info "Ensuring database '${db_name}' exists on ${container}..."
 
     # Idempotent: always ensure DB, user, and correct password exist
+    # Use printf | docker exec -i to avoid nested heredoc stdin conflict
     vps_run bash -s << EOF
 set -e
 ROOT_PASS=\$(cat "${secret_file}")
 DB_PASS="${DB_PASS}"
-docker exec ${container} mariadb -u root -p"\${ROOT_PASS}" << SQL
-CREATE DATABASE IF NOT EXISTS \\\`${db_name}\\\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER IF NOT EXISTS '${db_user}'@'%' IDENTIFIED BY '\${DB_PASS}';
-ALTER USER '${db_user}'@'%' IDENTIFIED BY '\${DB_PASS}';
-GRANT ALL PRIVILEGES ON \\\`${db_name}\\\`.* TO '${db_user}'@'%';
-FLUSH PRIVILEGES;
-SQL
+printf "CREATE DATABASE IF NOT EXISTS \\\`${db_name}\\\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;\nCREATE USER IF NOT EXISTS '${db_user}'@'%%' IDENTIFIED BY '\${DB_PASS}';\nALTER USER '${db_user}'@'%%' IDENTIFIED BY '\${DB_PASS}';\nGRANT ALL PRIVILEGES ON \\\`${db_name}\\\`.* TO '${db_user}'@'%%';\nFLUSH PRIVILEGES;\n" \
+    | docker exec -i ${container} mariadb -u root -p"\${ROOT_PASS}"
+echo "Database and user ready: ${db_name}"
 EOF
 }
 
