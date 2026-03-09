@@ -17,7 +17,7 @@ services:
       - no-new-privileges:true
     # Health check — deploy.sh waits for this before creating client DBs
     healthcheck:
-      test: ["CMD", "mariadb", "-u", "root", "--password-file=/run/secrets/mariadb_root_password", "-e", "SELECT 1"]
+      test: ["CMD-SHELL", "mariadb -uroot -p\"$(cat /run/secrets/mariadb_root_password)\" -e 'SELECT 1'"]
       interval: 10s
       timeout: 5s
       retries: 5
