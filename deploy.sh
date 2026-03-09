@@ -391,9 +391,9 @@ sync_db_local_to_vps() {
     scp ${VPS_SSH_OPTS} "$local_dump" "${VPS_SSH_USER}@${VPS_HOST}:${vps_dump}"
     rm -f "$local_dump"
 
-    # Import on VPS
+    # Import on VPS — pipe from host /tmp into container stdin
     info "Importing database on ${target_env}..."
-    vps_run "docker exec -i ${target_container} vendor/bin/wp --allow-root db import ${vps_dump}"
+    vps_run "cat ${vps_dump} | docker exec -i ${target_container} vendor/bin/wp --allow-root db import -"
 
     # URL search-replace
     info "Replacing URLs: ${source_url} → ${target_url}"
@@ -417,18 +417,15 @@ sync_db_vps_to_vps() {
     local target_url=$4
     local source_container="${CLIENT_NAME}_php_${source_env}"
     local target_container="${CLIENT_NAME}_php_${target_env}"
-    local dump_file="/tmp/deploy-${CLIENT_NAME}-$$.sql"
 
     step "Syncing database: ${source_env} → ${target_env} (on VPS)"
 
     vps_run bash -s << EOF
 set -e
 
-echo "Exporting ${source_env} database..."
-docker exec -i ${source_container} vendor/bin/wp --allow-root db export ${dump_file}
-
-echo "Importing into ${target_env}..."
-docker exec -i ${target_container} vendor/bin/wp --allow-root db import ${dump_file}
+echo "Exporting ${source_env} and piping into ${target_env}..."
+docker exec -i ${source_container} vendor/bin/wp --allow-root db export - \
+    | docker exec -i ${target_container} vendor/bin/wp --allow-root db import -
 
 echo "Replacing URLs..."
 docker exec -i ${target_container} vendor/bin/wp --allow-root \
@@ -437,8 +434,6 @@ docker exec -i ${target_container} vendor/bin/wp --allow-root \
 
 echo "Flushing cache..."
 docker exec -i ${target_container} vendor/bin/wp --allow-root cache flush || true
-
-rm -f ${dump_file}
 EOF
     success "Database synced: ${source_env} → ${target_env}"
 }
