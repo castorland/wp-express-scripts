@@ -254,7 +254,7 @@ WP_HOME='${wp_home}'
 WP_SITEURL='${wp_home}/wp'
 
 # Redis
-REDIS_ENABLED='$([ "$stack_env" = "production" ] && echo true || echo false)'
+REDIS_ENABLED='true'
 REDIS_HOST='redis'
 REDIS_PORT='6379'
 REDIS_PASSWORD='${redis_pass}'
@@ -352,7 +352,7 @@ start_vps_stack() {
     local stack_env=$1
     local stack_dir="${VPS_CLIENTS_DIR}/${CLIENT_NAME}/${stack_env}"
     local redis_profile=""
-    [[ "$stack_env" == "production" ]] && redis_profile="--profile redis"
+    [[ "$stack_env" == "production" || "$stack_env" == "staging" ]] && redis_profile="--profile redis"
 
     info "Starting ${stack_env} Docker stack..."
     vps_run "cd '${stack_dir}' && docker compose -f docker-compose.vps.yml ${redis_profile} up -d --build"
