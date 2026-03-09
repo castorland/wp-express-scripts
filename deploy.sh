@@ -357,6 +357,8 @@ start_vps_stack() {
     info "Starting ${stack_env} Docker stack..."
     vps_run "cd '${stack_dir}' && docker compose -f docker-compose.vps.yml ${redis_profile} up -d --build"
     wait_for_vps_container "${CLIENT_NAME}_php_${stack_env}"
+    # Reset OPcache so PHP-FPM picks up any changed files immediately after deploy
+    vps_run "docker exec ${CLIENT_NAME}_php_${stack_env} kill -USR2 1 2>/dev/null || true"
     success "${stack_env} stack running"
 }
 
