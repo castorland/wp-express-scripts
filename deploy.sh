@@ -200,25 +200,18 @@ create_client_db() {
 
     info "Ensuring database '${db_name}' exists on ${container}..."
 
-    # Check and create in one remote SSH session
+    # Idempotent: always ensure DB, user, and correct password exist
     vps_run bash -s << EOF
 set -e
 ROOT_PASS=\$(cat "${secret_file}")
-DB_EXISTS=\$(docker exec ${container} mariadb -u root -p"\${ROOT_PASS}" \
-    -sN -e "SELECT COUNT(*) FROM information_schema.SCHEMATA WHERE SCHEMA_NAME='${db_name}';" 2>/dev/null)
-
-if [ "\$DB_EXISTS" -eq "0" ]; then
-    DB_PASS="${DB_PASS}"
-    docker exec ${container} mariadb -u root -p"\${ROOT_PASS}" << SQL
+DB_PASS="${DB_PASS}"
+docker exec ${container} mariadb -u root -p"\${ROOT_PASS}" << SQL
 CREATE DATABASE IF NOT EXISTS \\\`${db_name}\\\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE USER IF NOT EXISTS '${db_user}'@'%' IDENTIFIED BY '\${DB_PASS}';
+ALTER USER '${db_user}'@'%' IDENTIFIED BY '\${DB_PASS}';
 GRANT ALL PRIVILEGES ON \\\`${db_name}\\\`.* TO '${db_user}'@'%';
 FLUSH PRIVILEGES;
 SQL
-    echo "CREATED"
-else
-    echo "EXISTS"
-fi
 EOF
 }
 
