@@ -327,6 +327,28 @@ EOF
     success "Code ready at ${stack_dir}"
 }
 
+# Wait for a container on the VPS to reach "running" state (not starting/restarting)
+# Usage: wait_for_vps_container <container_name> [timeout_seconds]
+wait_for_vps_container() {
+    local container=$1
+    local timeout=${2:-60}
+    local elapsed=0
+
+    info "Waiting for ${container} to be ready..."
+    while [[ $elapsed -lt $timeout ]]; do
+        local status
+        status=$(vps_run "docker inspect --format='{{.State.Status}}' '${container}' 2>/dev/null" 2>/dev/null || echo "not_found")
+        if [[ "$status" == "running" ]]; then
+            success "${container} is ready"
+            return 0
+        fi
+        sleep 3
+        elapsed=$((elapsed + 3))
+    done
+    error "${container} did not reach running state within ${timeout}s (last status: ${status})"
+    return 1
+}
+
 # Start (or restart) the Docker stack on the VPS
 # Usage: start_vps_stack <stack_env>
 start_vps_stack() {
@@ -337,6 +359,7 @@ start_vps_stack() {
 
     info "Starting ${stack_env} Docker stack..."
     vps_run "cd '${stack_dir}' && docker compose -f docker-compose.vps.yml ${redis_profile} up -d --build"
+    wait_for_vps_container "${CLIENT_NAME}_php_${stack_env}"
     success "${stack_env} stack running"
 }
 
