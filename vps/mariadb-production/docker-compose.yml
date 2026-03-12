@@ -1,7 +1,7 @@
 services:
-  mariadb-prod:
+  mariadb-production:
     image: mariadb:11.8
-    container_name: mariadb_prod
+    container_name: mariadb_production
     environment:
       MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mariadb_root_password
       # Clients are created per-deployment by deploy.sh — no default DB here

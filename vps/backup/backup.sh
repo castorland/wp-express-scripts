@@ -28,7 +28,7 @@ MARIADB_ROOT_PASS=$(cat "$SECRET_FILE")
 echo "[$(date)] Starting production DB backup..."
 
 # Dump all databases (--single-transaction = consistent snapshot without locking)
-docker exec mariadb_prod mariadb-dump \
+docker exec mariadb_production mariadb-dump \
     -u root -p"${MARIADB_ROOT_PASS}" \
     --all-databases \
     --single-transaction \

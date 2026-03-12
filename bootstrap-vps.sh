@@ -285,7 +285,7 @@ setup_mariadb() {
     fi
 }
 
-setup_mariadb "mariadb-production" "$MARIADB_PROD_DIR"    "MARIADB_PROD_ROOT_PASSWORD"    "mariadb_prod"
+setup_mariadb "mariadb-production" "$MARIADB_PROD_DIR"    "MARIADB_PROD_ROOT_PASSWORD"    "mariadb_production"
 setup_mariadb "mariadb-staging"    "$MARIADB_STAGING_DIR" "MARIADB_STAGING_ROOT_PASSWORD" "mariadb_staging"
 
 ################################################################################
@@ -348,7 +348,7 @@ echo ""
 echo -e "${GREEN}Infrastructure is running:${NC}"
 echo ""
 echo "  🔀  Traefik           → https://traefik.${BASE_DOMAIN}"
-echo "  🗄️   MariaDB (prod)    → container: mariadb_prod    | network: mariadb_prod_net"
+echo "  🗄️   MariaDB (prod)    → container: mariadb_production | network: mariadb_prod_net"
 echo "  🗄️   MariaDB (staging) → container: mariadb_staging | network: mariadb_staging_net"
 echo ""
 echo -e "${CYAN}Secrets stored in:${NC}"
