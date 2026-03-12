@@ -315,9 +315,9 @@ else
 fi
 
 # Create writable storage directories for plugins that need them
-# (must run after composer install so the plugin directories exist)
+# (best-effort from host — definitive creation happens inside container in start_vps_stack)
 if [ -d "${stack_dir}/web/app/plugins/all-in-one-wp-migration" ]; then
-    mkdir -p "${stack_dir}/web/app/plugins/all-in-one-wp-migration/storage"
+    mkdir -p "${stack_dir}/web/app/plugins/all-in-one-wp-migration/storage" 2>/dev/null || true
     chmod 777 "${stack_dir}/web/app/plugins/all-in-one-wp-migration/storage" 2>/dev/null || true
 fi
 EOF
@@ -359,6 +359,13 @@ start_vps_stack() {
     wait_for_vps_container "${CLIENT_NAME}_php_${stack_env}"
     # Reset OPcache so PHP-FPM picks up any changed files immediately after deploy
     vps_run "docker exec ${CLIENT_NAME}_php_${stack_env} kill -USR2 1 2>/dev/null || true"
+    # Create plugin storage dirs inside the container (www user owns the bind-mount,
+    # so mkdir from the host deploy user fails when composer created the parent dir)
+    vps_run "docker exec ${CLIENT_NAME}_php_${stack_env} sh -c '
+        [ -d /var/www/web/app/plugins/all-in-one-wp-migration ] && \
+        mkdir -p /var/www/web/app/plugins/all-in-one-wp-migration/storage && \
+        chmod 777 /var/www/web/app/plugins/all-in-one-wp-migration/storage
+    ' 2>/dev/null || true"
     success "${stack_env} stack running"
 }
 
@@ -611,8 +618,9 @@ else
 fi
 
 # Create writable storage directories for plugins that need them
+# (best-effort from host — definitive creation happens inside container in start_vps_stack)
 if [ -d "\${PROD_DIR}/web/app/plugins/all-in-one-wp-migration" ]; then
-    mkdir -p "\${PROD_DIR}/web/app/plugins/all-in-one-wp-migration/storage"
+    mkdir -p "\${PROD_DIR}/web/app/plugins/all-in-one-wp-migration/storage" 2>/dev/null || true
     chmod 777 "\${PROD_DIR}/web/app/plugins/all-in-one-wp-migration/storage" 2>/dev/null || true
 fi
 EOF
