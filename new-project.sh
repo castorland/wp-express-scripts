@@ -486,6 +486,9 @@ if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
         print_success "GitHub repo created: ${CLIENT_GITHUB_REPO}"
     fi
     git remote set-url origin "${CLIENT_GITHUB_REPO}" 2>/dev/null || git remote add origin "${CLIENT_GITHUB_REPO}"
+    # Add skeleton as upstream remote so future skeleton updates can be merged in:
+    # git fetch skeleton && git merge skeleton/main
+    git remote add skeleton "${GITHUB_REPO}" 2>/dev/null || true
     git push -u origin main -q
     print_success "Pushed to ${CLIENT_GITHUB_REPO}"
 
