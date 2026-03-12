@@ -294,7 +294,8 @@ mkdir -p "${VPS_CLIENTS_DIR}/${CLIENT_NAME}"
 if [ -d "${stack_dir}/.git" ]; then
     echo "Pulling latest code..."
     cd "${stack_dir}"
-    git pull --quiet
+    # fetch + checkout main — avoids detached HEAD issues from previous SHA checkouts
+    git fetch origin --quiet && git checkout main --quiet && git pull --quiet
 else
     echo "Cloning repository..."
     git clone --quiet "${GITHUB_REPO}" "${stack_dir}"
@@ -599,8 +600,10 @@ mkdir -p "\${PROD_DIR}"
 STAGING_SHA=\$(git -C "\${STAGING_DIR}" rev-parse HEAD 2>/dev/null || echo "")
 
 if [ -d "\${PROD_DIR}/.git" ]; then
-    git -C "\${PROD_DIR}" pull --quiet
-    [ -n "\${STAGING_SHA}" ] && git -C "\${PROD_DIR}" checkout "\${STAGING_SHA}" --quiet
+    # fetch instead of pull — production may be in detached HEAD after SHA checkout
+    git -C "\${PROD_DIR}" fetch origin --quiet
+    [ -n "\${STAGING_SHA}" ] && git -C "\${PROD_DIR}" checkout "\${STAGING_SHA}" --quiet \
+        || git -C "\${PROD_DIR}" checkout main --quiet
 else
     git clone --quiet "${GITHUB_REPO}" "\${PROD_DIR}"
     [ -n "\${STAGING_SHA}" ] && git -C "\${PROD_DIR}" checkout "\${STAGING_SHA}" --quiet
