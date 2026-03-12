@@ -195,8 +195,11 @@ create_client_db() {
     local stack_env=$1
     local db_name="${CLIENT_NAME//-/_}_${stack_env}"
     local db_user="${CLIENT_NAME//-/_}_${stack_env}"
+    # production MariaDB container is named mariadb_prod (not mariadb_production)
     local container="mariadb_${stack_env}"
+    [[ "$stack_env" == "production" ]] && container="mariadb_prod"
     local secret_file="/opt/wp-express/mariadb-${stack_env}/secrets/root_password"
+    [[ "$stack_env" == "production" ]] && secret_file="/opt/wp-express/mariadb-prod/secrets/root_password"
 
     info "Ensuring database '${db_name}' exists on ${container}..."
 
