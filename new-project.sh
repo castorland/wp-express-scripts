@@ -754,3 +754,20 @@ echo ""
 
 echo -e "${GREEN}🚀 Happy building!${NC}"
 echo ""
+
+# GitHub Actions reminder — only shown when repo was created
+if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
+    GITHUB_ORG="WP-Express-Clients"
+    echo -e "${YELLOW}⚠️  GitHub Actions — one-time secrets setup required:${NC}"
+    echo ""
+    echo "   Go to: https://github.com/${GITHUB_ORG}/${CLIENT_NAME}/settings/secrets/actions"
+    echo ""
+    echo "   Add these repository secrets (shared across all clients):"
+    echo "     VPS_HOST      — IP or hostname of your VPS"
+    echo "     VPS_SSH_USER  — SSH user (e.g. deploy)"
+    echo "     VPS_SSH_KEY   — Private SSH key for that user"
+    echo ""
+    echo "   Once added, every push to main auto-deploys to staging."
+    echo "   Production deploys via: Actions → Deploy → Run workflow"
+    echo ""
+fi
