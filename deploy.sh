@@ -255,7 +255,7 @@ WP_SITEURL='${wp_home}/wp'
 
 # Redis
 REDIS_ENABLED='true'
-REDIS_HOST='redis'
+REDIS_HOST='${CLIENT_NAME}_redis_${stack_env}'
 REDIS_PORT='6379'
 REDIS_PASSWORD='${redis_pass}'
 
