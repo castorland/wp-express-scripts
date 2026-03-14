@@ -45,3 +45,10 @@ http:
         regex: "^(https?://[^/]+)/wp-login\\.php(.*)"
         replacement: "${1}/wp/wp-login.php${2}"
         permanent: false
+
+    # Redirect www → non-www (canonical domain)
+    www-to-nonwww:
+      redirectRegex:
+        regex: "^https://www\\.(.*)"
+        replacement: "https://${1}"
+        permanent: true
